@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir SLKS PNS</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; padding: 20px; }
+        .card { background: white; max-width: 450px; margin: auto; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
+        label { display: block; margin: 15px 0 5px; font-weight: 600; color: #444; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; margin-top: 25px; cursor: pointer; transition: 0.3s; }
+        button:disabled { background: #95a5a6; cursor: not-allowed; }
+        .loading { display: none; text-align: center; color: #2980b9; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Pendaftaran SLKS</h2>
+    <form id="formPns">
+        <label>Nama Lengkap</label>
+        <input type="text" name="nama" required>
+
+        <label>NIP</label>
+        <input type="number" name="nip" placeholder="Masukkan 18 digit NIP" required>
+
+        <label>Jabatan</label>
+        <input type="text" name="jabatan" required>
+
+        <label>Masa Bakti</label>
+        <select name="masaBakti" required>
+            <option value="">-- Pilih --</option>
+            <option value="10 Tahun">10 Tahun</option>
+            <option value="20 Tahun">20 Tahun</option>
+            <option value="30 Tahun">30 Tahun</option>
+        </select>
+
+        <label>Upload Scan SK,DRH(PDF)</label>
+        <input type="file" id="fileInp" accept="image/*,application/pdf" required>
+
+        <button type="submit" id="submitBtn">Kirim Data</button>
+        <div id="loading" class="loading">Memproses data dan mengunggah file...</div>
+    </form>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbx4gfUooScKekllwgJ4S4Ys7A4RxIVu_iJvSL_Fa-adGvi-_DzznFpcNOxbYtmMmMzc/exec'; // GANTI DISINI
+    const form = document.getElementById('formPns');
+    const btn = document.getElementById('submitBtn');
+    const load = document.getElementById('loading');
+
+    form.onsubmit = e => {
+        e.preventDefault();
+        btn.disabled = true;
+        load.style.display = 'block';
+
+        const file = document.getElementById('fileInp').files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(evt) {
+            const base64 = evt.target.result.split(',')[1];
+            const payload = new URLSearchParams({
+                nama: form.nama.value,
+                nip: form.nip.value,
+                jabatan: form.jabatan.value,
+                masaBakti: form.masaBakti.value,
+                fileData: base64,
+                fileName: file.name,
+                mimeType: file.type
+            });
+
+            fetch(scriptURL, { method: 'POST', body: payload })
+                .then(res => {
+                    alert("Berhasil Terkirim!");
+                    form.reset();
+                    btn.disabled = false;
+                    load.style.display = 'none';
+                })
+                .catch(err => {
+                    alert("Gagal mengirim data.");
+                    btn.disabled = false;
+                    load.style.display = 'none';
+                });
+        };
+        reader.readAsDataURL(file);
+    };
+</script>
+
+</body>
+</html>
